@@ -1,0 +1,9 @@
+# Instruções do Projeto (Cursor)
+
+Siga rigorosamente todas as diretrizes arquiteturais, regras de Spec-Driven Development (SDD) e mapeamentos de comandos (`/passo1`, `/passo2`, `/passo3`) definidos em `AGENTS.md`.
+
+1. Leia `AGENTS.md` e `docs/sessao_agente.md` no início de cada tarefa.
+2. Quando o usuário invocar `/passo1`, leia e siga `.agents/skills/passo1/SKILL.md`.
+3. Quando o usuário invocar `/passo2`, leia e siga `.agents/skills/passo2/SKILL.md`.
+4. Quando o usuário invocar `/passo3`, leia e siga `.agents/skills/passo3/SKILL.md`.
+5. Trava SDD: Não gere nenhum código da aplicação até que os passos de análise (`/passo1` e `/passo2`) estejam concluídos e aprovados em `docs/brd.md` e `docs/trd.md`.

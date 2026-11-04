@@ -1,0 +1,71 @@
+# Business Requirement Document (BRD) — VibeTrack
+
+> **Status do Documento:** `APROVADO PELO USUÁRIO`  
+> **Responsável:** Skill de Analista de Sistemas Experiente (`/passo1`)  
+> **Última Atualização:** 2026-11-03
+
+---
+
+## 1. Resumo Executivo de Negócio
+O **VibeTrack** é um aplicativo instalável que conecta fotografia e música por meio de inteligência artificial. O produto permite que usuários cadastrados enviem uma foto e informem preferências musicais opcionais (como gênero, idioma ou época). A partir da análise visual do clima, das emoções e do contexto retratado na imagem, o aplicativo recomenda de **3 a 5 músicas**, apresentando o motivo detalhado de cada escolha, um reprodutor para ouvir um trecho da faixa e um atalho direto para ouvi-la na íntegra em plataformas musicais.
+
+O sistema opera com contas identificadas, **uso ilimitado de análises** para o usuário, otimização de custo via compressão de imagem e cache por hash da foto + filtros, proteção técnica transparente contra spam no servidor, histórico persistente com controle de exclusão pelo usuário, funcionamento resiliente em cenários de oscilação de conexão e geração de cartões visuais ("cards") para compartilhamento social.
+
+---
+
+## 2. Matriz de Requisitos Funcionais (Regras de Negócio)
+
+| ID | Módulo / Épico | Descrição do Requisito / Regra de Negócio | Prioridade (MoSCoW) | Critérios de Aceite (Given / When / Then) | Status |
+| :--- | :--- | :--- | :---: | :--- | :---: |
+| **RF-001** | Identificação e Conta | **Cadastro e Acesso Obrigatório:** O uso do aplicativo exige que o usuário crie uma conta e esteja identificado. Visitantes não identificados devem ser direcionados para a tela de acesso ou cadastro antes de enviar qualquer foto ou consultar histórico. | **Must** | **Dado** um visitante não identificado ao abrir o aplicativo,<br>**Quando** tentar acessar a área de análise de fotos ou histórico,<br>**Então** o sistema deve solicitar a entrada na conta ou criação de novo cadastro.<br><br>**Dado** um usuário autenticado,<br>**Quando** acessar o aplicativo,<br>**Então** deve visualizar a área de envio de fotos e seu histórico pessoal. | `Implementado` |
+| **RF-002** | Entrada e Preferências | **Envio de Foto e Direcionamento Musical Opcional:** O usuário pode selecionar uma imagem do seu aparelho e, opcionalmente, definir filtros de preferência (gêneros musicais favoritos, idioma das músicas ou época/década) antes de iniciar a análise. | **Must** | **Dado** um usuário autenticado,<br>**Quando** selecionar uma imagem válida no seu dispositivo,<br>**Então** o sistema deve comprimir/redimensionar a foto, exibir uma pré-visualização e campos opcionais de preferência musical (gênero, idioma, época) antes do envio.<br><br>**Dado** um arquivo inválido, corrompido ou que não seja imagem,<br>**Quando** o usuário tentar selecioná-lo,<br>**Então** o sistema deve impedir o envio e exibir mensagem clara de orientação. | `Implementado` |
+| **RF-003** | Uso Ilimitado, Cache e Proteção Anti-Abuso | **Análises Ilimitadas com Rate Limit Técnico e Cache por Hash:** O uso é ilimitado para o usuário comum. O servidor aplica um rate limit técnico por minuto (`RATE_LIMIT_PER_MINUTE`) com mensagem amigável caso haja excesso de requisições em sequência, além de cache por hash da imagem + filtros para evitar reanalisar a mesma foto na IA. | **Must** | **Dado** um usuário autenticado enviando múltiplas fotos válidas em sequência normal,<br>**Quando** solicitar as análises,<br>**Então** todas devem ser processadas sem bloqueio diário.<br><br>**Dado** um disparo excessivo de requisições no mesmo minuto acima do configurado,<br>**Quando** o servidor detectar o excesso,<br>**Então** deve responder com status 429 e a mensagem amigável *"Calma, tente de novo em alguns segundos"*. | `Implementado` |
+| **RF-004** | Inteligência e Análise Visual | **Extração de Clima, Emoção e Contexto:** Ao receber a foto (e eventuais preferências), o sistema deve identificar e apresentar ao usuário uma síntese da "Vibe" da imagem (emoções transmitidas, atmosfera, ambiente e estilo) que serviu de base para a curadoria musical. | **Must** | **Dado** o envio confirmado de uma foto válida,<br>**Quando** a análise for concluída,<br>**Então** o sistema deve exibir um resumo legível do clima, emoção e contexto identificados na fotografia, juntamente com as recomendações musicais. | `Implementado` |
+| **RF-005** | Curadoria e Justificativa Musical | **Recomendação de 3 a 5 Músicas Justificadas:** Cada análise concluída deve retornar entre **3 e 5 músicas** que combinem com a foto e respeitem as preferências opcionais informadas. Cada item deve exibir: título da música, nome do artista, imagem de capa, texto explicativo do motivo da escolha e atalho para ouvir a música completa em plataforma externa. | **Must** | **Dado** o término da análise de uma foto,<br>**Quando** a tela de resultados for apresentada,<br>**Então** devem ser listadas de 3 a 5 músicas, cada uma contendo obrigatoriamente o motivo explícito de como aquela faixa se conecta ao clima/contexto da foto e um botão para abri-la no serviço musical externo. | `Implementado` |
+| **RF-006** | Comportamento do Sinal Sonoro | **Reprodução de Trecho de Áudio e Regra de Atenuação:** O aplicativo deve priorizar músicas que possuam trecho sonoro (prévia de ~30s) disponível. A reprodução deve ser individual (tocar uma música pausa qualquer outra em execução). Caso uma música ideal não possua trecho liberado no catálogo externo, ela ainda deve ser exibida com seu motivo, um aviso claro de "Prévia indisponível" e o botão para ouvir externamente. | **Must** | **Dado** que o usuário está ouvindo o trecho da Música A,<br>**Quando** acionar o botão de reproduzir na Música B,<br>**Então** a Música A deve ser pausada imediatamente e a Música B deve iniciar a reprodução.<br><br>**Dado** que uma música recomendada não possui prévia de áudio disponível no catálogo externo,<br>**Quando** o resultado for exibido,<br>**Então** o cartão da música deve desabilitar o botão de reprodução interna, informar "Trecho indisponível para reprodução direta" e destacar o atalho para ouvir no aplicativo de música externo. | `Implementado` |
+| **RF-007** | Interação com Resultados | **Gerar Novas Sugestões para a Mesma Foto:** Na tela de resultado de uma análise, o usuário pode solicitar novas recomendações para a mesma fotografia caso queira alternativas diferentes. | **Should** | **Dado** um usuário visualizando o resultado de uma foto,<br>**Quando** acionar o botão de novas músicas para a mesma foto,<br>**Então** o sistema deve gerar uma nova lista de 3 a 5 músicas inéditas para aquela foto e registrar o novo resultado no histórico. | `Implementado` |
+| **RF-008** | Gestão de Histórico Pessoal | **Histórico Completo com Exclusão pelo Usuário:** Todas as análises bem-sucedidas ficam salvas na conta do usuário (miniatura da foto, leitura de clima/emoção, data e músicas sugeridas). O usuário pode consultar análises antigas a qualquer momento e excluir registros específicos quando desejar. | **Must** | **Dado** um usuário autenticado que realizou análises anteriormente,<br>**Quando** acessar a seção "Meu Histórico",<br>**Então** deve visualizar a lista cronológica de suas análises com a miniatura da foto e as músicas recomendadas.<br><br>**Dado** um item no histórico,<br>**Quando** o usuário acionar "Excluir análise" e confirmar,<br>**Então** o registro (foto e recomendações associadas) deve ser removido permanentemente de sua conta. | `Implementado` |
+| **RF-009** | Compartilhamento Social | **Geração de Resumo Visual ("Card"):** A partir de uma recomendação recebida, o usuário pode gerar um cartão visual combinando sua foto, o clima identificado e a música escolhida para compartilhar em redes sociais ou aplicativos de mensagem. | **Should** | **Dado** um usuário na tela de resultados de uma análise,<br>**Quando** selecionar uma das músicas sugeridas e acionar "Compartilhar Card",<br>**Então** o sistema deve montar uma peça visual harmoniosa contendo a foto enviada, o título/artista da música, um trecho da justificativa e permitir o compartilhamento ou salvamento da imagem no aparelho. | `Implementado` |
+| **RF-010** | Mobilidade, Instalação e Conectividade | **Aplicativo Instalável e Atenuação Sem Internet:** O aplicativo deve poder ser instalado na tela inicial do aparelho do usuário. Quando o dispositivo estiver sem conexão com a internet, o usuário deve conseguir abrir o aplicativo e navegar pelo histórico de análises já consultadas no aparelho, recebendo um aviso claro de que novas análises exigem conexão ativa. | **Must** | **Dado** um usuário acessando o aplicativo em um dispositivo compatível,<br>**Quando** desejar instalá-lo,<br>**Então** deve poder adicioná-lo à tela inicial com ícone próprio e abertura em tela dedicada.<br><br>**Dado** que o usuário está sem sinal de internet,<br>**Quando** abrir o aplicativo,<br>**Então** deve visualizar um aviso de modo desconectado e conseguir consultar os resultados já carregados anteriormente no aparelho. | `Implementado` |
+
+---
+
+## 3. Fluxos de Usuário e Jornadas Principais (User Flows)
+
+### 3.1. Fluxo Principal (Happy Path)
+1. **Acesso e Identificação:** O usuário abre o **VibeTrack** (pelo navegador ou ícone instalado na tela inicial) e entra em sua conta (ou cria um cadastro rápido).
+2. **Envio e Preferências:** O usuário seleciona uma foto do seu aparelho e, opcionalmente, escolhe preferências musicais (ex.: Gênero: *Indie / Pop*, Idioma: *Português ou Inglês*, Época: *Atual*).
+3. **Processamento e Leitura da Vibe:** O usuário aciona o botão **"Analisar foto"** (protegido contra cliques duplos via debounce). O aplicativo apresenta um estado visual de análise em andamento e, em seguida, exibe o diagnóstico de **Clima, Emoções e Contexto** da foto.
+4. **Exploração das Recomendações:** Abaixo da leitura da imagem, o aplicativo apresenta de **3 a 5 músicas**. Em cada sugestão, o usuário lê a justificativa personalizada e toca no botão de reprodução para ouvir o trecho de 30 segundos.
+5. **Ação Final (Audição Completa ou Compartilhamento):** O usuário escolhe a música de que mais gostou, gera um **Card Compartilhável** para postar em suas redes sociais ou clica no atalho para ouvir a música inteira em sua plataforma de música preferida. A análise fica automaticamente salva em seu **Histórico**.
+
+### 3.2. Fluxos Alternativos e Exceções de Negócio (Edge Cases e Regras de Atenuação)
+- **Exceção 1 — Excesso de Requisições em Curto Intervalo (Rate Limit por Minuto):**
+  - Se o mesmo usuário ou endereço IP disparar mais análises por minuto do que o configurado em `RATE_LIMIT_PER_MINUTE` (padrão: 10 por minuto), o servidor responde com a mensagem amigável *"Calma, tente de novo em alguns segundos"*.
+- **Exceção 2 — Música Recomendada sem Prévia Sonora Disponível:**
+  - Caso o catálogo musical externo não forneça trecho de áudio para uma das músicas sugeridas, o sistema mantém a recomendação na lista (preservando a qualidade da curadoria), exibe o selo *"Prévia de áudio não disponível"* no lugar do botão de tocar e destaca o botão *"Ouvir música completa externamente"*.
+- **Exceção 3 — Oscilação ou Ausência de Sinal de Internet:**
+  - Se o usuário abrir o aplicativo sem internet, o sistema exibe uma faixa informativa de *"Sem conexão — exibindo seu histórico salvo"*. Se a conexão cair durante o envio de uma foto antes da conclusão da análise, o sistema exibe mensagem amigável de falha de comunicação e orienta tentar novamente quando o sinal estabilizar.
+- **Exceção 4 — Imagem Ilegível, Corrompida ou Imprópria:**
+  - Se a imagem enviada estiver corrompida, totalmente escura/ilegível ou em formato não suportado, o sistema interrompe o fluxo e orienta o usuário a escolher outra fotografia.
+- **Exceção 5 — Solicitação de "Gerar Novas Sugestões":**
+  - Se o usuário não se identificar com as primeiras 3 a 5 músicas e clicar para buscar outras músicas para a mesma foto, uma nova curadoria (evitando repetir as músicas já listadas para aquela foto) é apresentada.
+
+---
+
+## 4. Entidades Conceituais de Negócio (Modelo de Domínio)
+
+| Entidade | Atributos Principais (Visão de Negócio) | Relacionamentos e Regras de Integridade |
+| :--- | :--- | :--- |
+| **Usuário (Conta)** | Identificador único, Nome de exibição, Endereço de contato (e-mail), Data de criação. | Um Usuário possui várias **Análises de Foto** em seu histórico. |
+| **Análise de Foto** | Identificador da análise, Data e hora de realização, Imagem enviada (miniatura/referência visual), Preferências informadas (gênero, idioma, época), Resumo de Clima/Emoção/Contexto detectado. | Pertence a um único **Usuário**. Contém de 3 a 5 **Recomendações Musicais**. Pode ser visualizada ou excluída pelo próprio Usuário dono da conta. |
+| **Recomendação Musical** | Ordem de destaque (1 a 5), Título da faixa, Nome do artista, Imagem de capa do álbum, Motivo da escolha (justificativa contextual), Endereço do trecho sonoro (opcional/atenuável), Endereço externo para ouvir a música completa. | Vinculada a uma **Análise de Foto**. Deve possuir obrigatoriamente justificativa de combinação e link externo; o trecho de áudio é priorizado, mas sua ausência é tratada pela regra de atenuação (`RF-006`). |
+| **Card Compartilhável** | Fotografia do usuário, Clima principal detectado, Música selecionada (capa, título, artista) e frase de justificativa. | Gerado sob demanda a partir da combinação de uma **Análise de Foto** com uma **Recomendação Musical** escolhida pelo usuário. |
+
+---
+
+## 5. Indicadores de Sucesso e Métricas (KPIs)
+- **Taxa de Engajamento Sonoro:** Percentual de análises realizadas nas quais o usuário dá *play* em pelo menos um trecho musical sugerido (Meta inicial: > 75%).
+- **Taxa de Aprovação da Primeira Curadoria:** Percentual de análises em que o usuário interage positivamente (ouve até o fim, clica para ouvir externamente ou compartilha o *Card*) sem precisar gerar novas sugestões.
+- **Eficiência de Cache da IA:** Proporção de análises idênticas (mesma foto + mesmos filtros) atendidas instantaneamente pelo cache por hash.
+- **Taxa de Compartilhamento Social:** Percentual de análises que resultam na geração e compartilhamento de um *Card* visual.

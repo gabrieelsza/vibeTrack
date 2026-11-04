@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    background-color: #FDF9F3;
+    color: #141413;
+    font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@keyframes checkerSlide {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 24px 0;
+  }
+}
+
+@keyframes vinylSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes noteFloatSway {
+  0% {
+    transform: translateY(10px) translateX(0px) rotate(-8deg) scale(0.85);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.95;
+  }
+  50% {
+    transform: translateY(-14px) translateX(6px) rotate(10deg) scale(1);
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-36px) translateX(-5px) rotate(-6deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes eqPulse {
+  0%,
+  100% {
+    transform: scaleY(0.28);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* Pure CSS Checkerboard (Xadrez Vermelho e Creme - 2 linhas de quadrados) */
+.checker-strip {
+  height: 12px;
+  width: 100%;
+  background-image: repeating-conic-gradient(#B91C1C 0% 25%, #FDF9F3 0% 50%);
+  background-size: 12px 12px;
+}
+
+.checker-strip-sm {
+  height: 10px;
+  width: 100%;
+  background-image: repeating-conic-gradient(#B91C1C 0% 25%, #FDF9F3 0% 50%);
+  background-size: 10px 10px;
+}
+
+.checker-strip-animated {
+  height: 12px;
+  width: 100%;
+  background-image: repeating-conic-gradient(#B91C1C 0% 25%, #FDF9F3 0% 50%);
+  background-size: 12px 12px;
+  animation: checkerSlide 0.9s linear infinite;
+}
+
+.vinyl-spin {
+  animation: vinylSpin 3.6s linear infinite;
+}
+
+.cassette-reel-spin {
+  animation: vinylSpin 2.4s linear infinite;
+  transform-origin: center;
+}
+
+.musical-note-1 {
+  animation: noteFloatSway 2.4s ease-in-out infinite;
+}
+
+.musical-note-2 {
+  animation: noteFloatSway 2.8s ease-in-out 0.7s infinite;
+}
+
+.musical-note-3 {
+  animation: noteFloatSway 2.6s ease-in-out 1.4s infinite;
+}
+
+.eq-bar {
+  transform-origin: bottom;
+  animation: eqPulse 0.85s ease-in-out infinite;
+}
+
+.eq-bar-1 {
+  animation-duration: 0.75s;
+  animation-delay: 0s;
+}
+.eq-bar-2 {
+  animation-duration: 0.95s;
+  animation-delay: 0.18s;
+}
+.eq-bar-3 {
+  animation-duration: 0.65s;
+  animation-delay: 0.32s;
+}
+.eq-bar-4 {
+  animation-duration: 0.88s;
+  animation-delay: 0.12s;
+}
+.eq-bar-5 {
+  animation-duration: 0.72s;
+  animation-delay: 0.26s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checker-strip-animated,
+  .vinyl-spin,
+  .cassette-reel-spin,
+  .musical-note-1,
+  .musical-note-2,
+  .musical-note-3,
+  .eq-bar {
+    animation: none !important;
+    transition: none !important;
+  }
+}

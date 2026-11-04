@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+backend/dist/
+frontend/dist/
+
+# Environment variables
+.env
+.env.local
+backend/.env
+frontend/.env
+
+# Local dev database fallback store
+backend/data/*.json
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db

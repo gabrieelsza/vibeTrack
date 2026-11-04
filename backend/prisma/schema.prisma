@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String          @id @default(uuid())
+  name         String
+  email        String          @unique
+  passwordHash String          @map("password_hash")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  analyses     PhotoAnalysis[]
+
+  @@map("users")
+}
+
+model PhotoAnalysis {
+  id              String                @id @default(uuid())
+  userId          String                @map("user_id")
+  imageThumbnail  String                @db.Text @map("image_thumbnail")
+  prefGenres      String?               @map("pref_genres")
+  prefLanguage    String?               @map("pref_language")
+  prefEra         String?               @map("pref_era")
+  vibeSummary     String                @db.Text @map("vibe_summary")
+  moodTags        String[]              @map("mood_tags")
+  dominantColors  String[]              @map("dominant_colors")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendations MusicRecommendation[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("photo_analyses")
+}
+
+model MusicRecommendation {
+  id               String        @id @default(uuid())
+  analysisId       String        @map("analysis_id")
+  rankOrder        Int           @map("rank_order")
+  title            String
+  artist           String
+  albumArtUrl      String?       @map("album_art_url")
+  reason           String        @db.Text
+  previewUrl       String?       @map("preview_url")
+  hasPreview       Boolean       @default(false) @map("has_preview")
+  externalUrl      String        @map("external_url")
+  externalProvider String        @default("Streaming") @map("external_provider")
+  analysis         PhotoAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId, rankOrder(sort: Asc)])
+  @@map("music_recommendations")
+}
