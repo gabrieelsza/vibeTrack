@@ -128,7 +128,7 @@ export const AuthPage: React.FC = () => {
                   minLength={2}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex.: Marina Silva"
+                  placeholder="Ex.: Mariana Araujo"
                   className="min-h-[44px] w-full rounded-full border border-poster-border bg-poster-cream py-2.5 pl-10 pr-4 text-sm font-medium text-poster-ink placeholder-poster-muted focus:border-poster-red focus:outline-none"
                 />
               </div>
